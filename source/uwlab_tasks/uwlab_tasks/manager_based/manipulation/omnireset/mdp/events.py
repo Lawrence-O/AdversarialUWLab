@@ -993,27 +993,39 @@ class assembly_sampling_event(ManagerTermBase):
 
 
 class MultiResetManager(ManagerTermBase):
+    _ALLOWED_SPLITS = ("train", "eval", "all")
+
     def __init__(self, cfg: EventTermCfg, env: ManagerBasedEnv):
         super().__init__(cfg, env)
 
         dataset_dir: str = cfg.params.get("dataset_dir", "")
         reset_types: list[str] = cfg.params.get("reset_types", [])
         probabilities: list[float] = cfg.params.get("probs", [])
+        split: str = cfg.params.get("split", "train")
 
         if not reset_types:
             raise ValueError("No reset_types provided")
         if len(reset_types) != len(probabilities):
             raise ValueError("Number of reset_types must match number of probabilities")
+        if split not in self._ALLOWED_SPLITS:
+            raise ValueError(
+                f"split must be one of {self._ALLOWED_SPLITS}, got {split!r}. "
+                "Use 'train' for training (default), 'eval' for evaluation, or 'all' "
+                "to load the unsplit dataset."
+            )
 
         # Derive pair directory from scene objects
         insertive_usd_path = env.scene["insertive_object"].cfg.spawn.usd_path
         receptive_usd_path = env.scene["receptive_object"].cfg.spawn.usd_path
         pair = utils.compute_pair_dir(insertive_usd_path, receptive_usd_path)
 
-        # Generate dataset paths from pair directory and reset types
+        # Generate dataset paths from pair directory and reset types.
+        # ``split="train"|"eval"`` selects ``resets_<rt>_<split>.pt`` from a
+        # pre-split dataset; ``split="all"`` reads the canonical ``resets_<rt>.pt``.
+        split_suffix = "" if split == "all" else f"_{split}"
         dataset_files = []
         for rt in reset_types:
-            dataset_files.append(f"{dataset_dir}/Resets/{pair}/resets_{rt}.pt")
+            dataset_files.append(f"{dataset_dir}/Resets/{pair}/resets_{rt}{split_suffix}.pt")
 
         # Load all datasets
         self.datasets = []
@@ -1052,6 +1064,7 @@ class MultiResetManager(ManagerTermBase):
         reset_types: list[str],
         probs: list[float],
         success: str | None = None,
+        split: str = "train",
     ) -> None:
         if env_ids is None:
             env_ids = torch.arange(self.num_envs, device=self._env.device)

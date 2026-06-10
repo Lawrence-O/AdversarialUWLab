@@ -362,6 +362,7 @@ class RGBEventCfg(BaseRGBEventCfg):
             "reset_types": ["ObjectAnywhereEEAnywhere"],
             "probs": [1.0],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "all",
         },
     )
 
@@ -383,6 +384,7 @@ class DataCollectionRGBEventCfg(RGBEventCfg):
             ],
             "probs": [0.25, 0.25, 0.25, 0.25],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "all",
         },
     )
 
@@ -794,6 +796,7 @@ class OODRGBEventCfg(BaseRGBEventCfg):
             "reset_types": ["ObjectAnywhereEEAnywhere"],
             "probs": [1.0],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "all",
         },
     )
 
@@ -815,6 +818,7 @@ class DataCollectionOODRGBEventCfg(OODRGBEventCfg):
             ],
             "probs": [0.25, 0.25, 0.25, 0.25],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "all",
         },
     )
 

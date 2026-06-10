@@ -239,6 +239,7 @@ class ObjectRestingEEGraspedEventCfg(ResetStatesBaseEventCfg):
             "dataset_dir": f"{UWLAB_CLOUD_ASSETS_DIR}/Datasets/OmniReset",
             "reset_types": ["ObjectAnywhereEEAnywhere"],
             "probs": [1.0],
+            "split": "all",
         },
     )
 

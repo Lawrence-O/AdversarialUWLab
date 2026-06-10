@@ -65,7 +65,10 @@ def main(env_cfg, agent_cfg) -> None:
     # make sure environment is non-deterministic for diverse pose discovery
     env_cfg.seed = None
 
-    # Override existing MultiResetManager params to use the CLI-specified dataset/types
+    # Override existing MultiResetManager params to use the CLI-specified dataset/types.
+    # Default to ``split="all"`` to preserve the historical behaviour of loading
+    # the unsplit ``resets_<rt>.pt`` files; users pointing at a split dataset
+    # (``OmniReset_split_v*``) can override with ``--split train`` or ``--split eval``.
     ALL_RESET_TYPES = [
         "ObjectAnywhereEEAnywhere",
         "ObjectRestingEEGrasped",
@@ -76,6 +79,7 @@ def main(env_cfg, agent_cfg) -> None:
     env_cfg.events.reset_from_reset_states.params["dataset_dir"] = args_cli.dataset_dir
     env_cfg.events.reset_from_reset_states.params["reset_types"] = reset_types
     env_cfg.events.reset_from_reset_states.params["probs"] = [1.0] * len(reset_types)
+    env_cfg.events.reset_from_reset_states.params["split"] = getattr(args_cli, "split", None) or "all"
 
     # create environment
     env = cast(ManagerBasedRLEnv, gym.make(args_cli.task, cfg=env_cfg)).unwrapped
