@@ -21,7 +21,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from uwlab_assets import UWLAB_CLOUD_ASSETS_DIR
+from uwlab_assets import UWLAB_CLOUD_ASSETS_DIR, UWLAB_SPLIT_ASSETS_DIR
 from uwlab_assets.robots.ur5e_robotiq_gripper import EXPLICIT_UR5E_ROBOTIQ_2F85, IMPLICIT_UR5E_ROBOTIQ_2F85
 
 from uwlab_tasks.manager_based.manipulation.omnireset.config.ur5e_robotiq_2f85.actions import (
@@ -239,7 +239,7 @@ class TrainEventCfg(BaseEventCfg):
         func=task_mdp.MultiResetManager,
         mode="reset",
         params={
-            "dataset_dir": f"{UWLAB_CLOUD_ASSETS_DIR}/Datasets/OmniReset",
+            "dataset_dir": f"{UWLAB_SPLIT_ASSETS_DIR}/Datasets/OmniReset_split_v1",
             "reset_types": [
                 "ObjectAnywhereEEAnywhere",
                 "ObjectRestingEEGrasped",
@@ -248,6 +248,7 @@ class TrainEventCfg(BaseEventCfg):
             ],
             "probs": [0.25, 0.25, 0.25, 0.25],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "train",
         },
     )
 
@@ -260,10 +261,11 @@ class TrainEvalEventCfg(BaseEventCfg):
         func=task_mdp.MultiResetManager,
         mode="reset",
         params={
-            "dataset_dir": f"{UWLAB_CLOUD_ASSETS_DIR}/Datasets/OmniReset",
+            "dataset_dir": f"{UWLAB_SPLIT_ASSETS_DIR}/Datasets/OmniReset_split_v1",
             "reset_types": ["ObjectAnywhereEEAnywhere"],
             "probs": [1.0],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "train",
         },
     )
 
@@ -304,10 +306,11 @@ class FinetuneEvalEventCfg(BaseEventCfg):
         func=task_mdp.MultiResetManager,
         mode="reset",
         params={
-            "dataset_dir": f"{UWLAB_CLOUD_ASSETS_DIR}/Datasets/OmniReset",
+            "dataset_dir": f"{UWLAB_SPLIT_ASSETS_DIR}/Datasets/OmniReset_split_v1",
             "reset_types": ["ObjectAnywhereEEAnywhere"],
             "probs": [1.0],
             "success": "env.reward_manager.get_term_cfg('progress_context').func.success",
+            "split": "train",
         },
     )
 
