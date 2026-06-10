@@ -47,6 +47,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
 
 # Copy the UW Lab directory (files to exclude are defined in .dockerignore)
 COPY ../ ${UWLAB_PATH}
+# Local rsl_rl: sibling of UWLab on host; compose sets build context name via additional_contexts
+COPY --from=rsl_rl . ${UWLAB_PATH}/rsl_rl
 
 # Ensure uwlab.sh has execute permissions
 RUN chmod +x ${UWLAB_PATH}/uwlab.sh
@@ -54,8 +56,11 @@ RUN chmod +x ${UWLAB_PATH}/uwlab.sh
 # Set up a symbolic link between the installed Isaac Sim root folder and _isaac_sim in the UW Lab directory
 RUN ln -sf ${ISAACSIM_ROOT_PATH} ${UWLAB_PATH}/_isaac_sim
 
-# Install toml dependency
-RUN ${UWLAB_PATH}/uwlab.sh -p -m pip install toml
+# Install toml and setuptools dependencies, then pre-install flatdict without
+# build isolation (its setup.py imports pkg_resources which is absent from the
+# pip-created build-isolation venv on the Isaac Sim Kit Python)
+RUN ${UWLAB_PATH}/uwlab.sh -p -m pip install toml setuptools && \
+    ${UWLAB_PATH}/uwlab.sh -p -m pip install --no-build-isolation "flatdict==4.0.1"
 
 # Install apt dependencies for extensions that declare them in their extension.toml
 RUN --mount=type=cache,target=/var/cache/apt \
@@ -71,7 +76,8 @@ RUN mkdir -p ${ISAACSIM_ROOT_PATH}/kit/cache && \
     mkdir -p ${DOCKER_USER_HOME}/.nv/ComputeCache && \
     mkdir -p ${DOCKER_USER_HOME}/.nvidia-omniverse/logs && \
     mkdir -p ${DOCKER_USER_HOME}/.local/share/ov/data && \
-    mkdir -p ${DOCKER_USER_HOME}/Documents
+    mkdir -p ${DOCKER_USER_HOME}/Documents && \
+    mkdir -p ${UWLAB_PATH}/datasets
 
 # for singularity usage, create NVIDIA binary placeholders
 RUN touch /bin/nvidia-smi && \
@@ -87,6 +93,12 @@ RUN touch /bin/nvidia-smi && \
 # use pip caching to avoid reinstalling large packages
 RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \
     ${UWLAB_PATH}/uwlab.sh --install
+
+# Install rsl_rl from the copied local tree in editable mode so the runtime
+# bind-mount (docker-compose: ../../rsl_rl -> ${UWLAB_PATH}/rsl_rl) is always
+# used directly without requiring a rebuild when rsl_rl changes.
+RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \
+    ${UWLAB_PATH}/uwlab.sh -p -m pip install -e ${UWLAB_PATH}/rsl_rl
 
 # HACK: Remove install of quadprog dependency
 RUN ${UWLAB_PATH}/uwlab.sh -p -m pip uninstall -y quadprog
