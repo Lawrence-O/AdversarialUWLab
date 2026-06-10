@@ -21,14 +21,27 @@ UWLAB_ASSETS_DATA_DIR = os.path.join(UWLAB_ASSETS_EXT_DIR, "data")
 UWLAB_ASSETS_METADATA = toml.load(os.path.join(UWLAB_ASSETS_EXT_DIR, "config", "extension.toml"))
 """Extension metadata dictionary parsed from the extension.toml file."""
 
-UWLAB_CLOUD_ASSETS_DIR = "https://huggingface.co/datasets/UW-Lab/uwlab-assets/resolve/main"
+UWLAB_CLOUD_ASSETS_DIR = os.environ.get(
+    "UWLAB_CLOUD_ASSETS_DIR",
+    "https://huggingface.co/datasets/UW-Lab/uwlab-assets/resolve/main",
+)
 """HuggingFace mirror for canonical UW-Lab assets (USDs, robot URDFs, grasps,
-unsplit reset datasets). Owned upstream; treat as read-only."""
+unsplit reset datasets). Owned upstream; treat as read-only.
 
-UWLAB_SPLIT_ASSETS_DIR = "https://huggingface.co/datasets/Law-Ony/omni_reset_v1/resolve/main"
+Override via the ``UWLAB_CLOUD_ASSETS_DIR`` env var to point at a local mirror
+on offline clusters, e.g.
+``export UWLAB_CLOUD_ASSETS_DIR=/mmfs1/gscratch/socialrl/lawony/uwlab-assets``"""
+
+UWLAB_SPLIT_ASSETS_DIR = os.environ.get(
+    "UWLAB_SPLIT_ASSETS_DIR",
+    "https://huggingface.co/datasets/Law-Ony/omni_reset_v1/resolve/main",
+)
 """HuggingFace mirror for derived train/eval splits and any other artefacts
 produced by this fork (e.g. stratified OmniReset 90/10 split under
-``Datasets/OmniReset_split_v1/``). Owned by Lawrence-O/AdversarialUWLab."""
+``Datasets/OmniReset_split_v1/``). Owned by Lawrence-O/AdversarialUWLab.
+
+Override via the ``UWLAB_SPLIT_ASSETS_DIR`` env var (same use case as
+``UWLAB_CLOUD_ASSETS_DIR``)."""
 
 
 def _extract_relative_path(url: str) -> str:
